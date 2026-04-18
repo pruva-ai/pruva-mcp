@@ -36,7 +36,7 @@ Each module exports a `register*Tools(server, client)` function. All tool handle
 - `products.ts` — 2 tools (list, get)
 - `features.ts` — 4 tools (list, get, create, update)
 - `documents.ts` — 5 tools (list, get, create, update, search)
-- `relations.ts` — 1 tool (get_feature_relations)
+- `relations.ts` — 1 tool (list_feature_relations)
 
 ### Resources (`src/resources/`)
 

@@ -81,7 +81,7 @@ This exposes an `/mcp` endpoint on port 3100 (configurable via `PORT`) and a `/h
 | `pruva_create_document` | Create a new document within a product |
 | `pruva_update_document` | Update a document's content or path |
 | `pruva_search_documents` | Search documents by content within a product |
-| `pruva_get_feature_relations` | Get all feature relations for a product |
+| `pruva_list_feature_relations` | List all feature relations for a product |
 
 ## Available Resources
 
