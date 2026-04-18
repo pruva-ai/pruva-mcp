@@ -1,6 +1,11 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PruvaClient } from "../client.js";
-import type { Feature, FeatureRelation, Product } from "../types.js";
+import type {
+  FeatureRelation,
+  FeatureSummary,
+  Product,
+  ProductDetail,
+} from "../types.js";
 
 export function registerProductResources(
   server: McpServer,
@@ -16,7 +21,6 @@ export function registerProductResources(
           resources: products.map((p) => ({
             uri: `pruva://products/${p.id}`,
             name: p.name,
-            description: p.description ?? undefined,
             mimeType: "application/json" as const,
           })),
         };
@@ -24,7 +28,7 @@ export function registerProductResources(
     }),
     { mimeType: "application/json" },
     async (uri, { productId }) => {
-      const data = await client.call<Product>("get_product", {
+      const data = await client.call<ProductDetail>("get_product", {
         productId: productId as string,
       });
       return {
@@ -56,7 +60,7 @@ export function registerProductResources(
     }),
     { mimeType: "application/json" },
     async (uri, { productId }) => {
-      const data = await client.call<Feature[]>("list_features", {
+      const data = await client.call<FeatureSummary[]>("list_features", {
         productId: productId as string,
       });
       return {

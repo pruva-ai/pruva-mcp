@@ -23,58 +23,48 @@ export interface PruvaApiError {
   error: string;
 }
 
-// ── Domain types (matching API select columns) ───────────────
+// ── Domain types (matching API response shapes) ──────────────
 
 export interface Product {
   id: string;
   name: string;
-  description: string | null;
-  state: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface Feature {
-  id: string;
-  product_id: string;
+export interface ProductDetail extends Product {
+  feature_count: number;
+  document_count: number;
+}
+
+export interface FeatureSummary {
   slug: string;
   title: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  content: string;
 }
 
-export interface DocumentMeta {
-  id: string;
-  product_id: string;
+export interface FeatureDetail extends FeatureSummary {
+  wireframes: Record<string, unknown>;
+}
+
+export interface DocumentSummary {
   path: string;
-  version: number;
-  doc_type: string;
-  feature_id: string | null;
-  created_at: string;
-  updated_at: string;
+  content_preview: string;
 }
 
-export interface DocumentFull extends DocumentMeta {
-  content: string | null;
+export interface DocumentFull {
+  path: string;
+  content: string;
 }
 
 export interface SearchResult {
-  id: string;
   path: string;
-  doc_type: string;
-  feature_id: string | null;
   content_snippet: string;
 }
 
 export interface FeatureRelation {
-  id: string;
-  source_feature: string;
-  target_feature: string;
+  source_slug: string;
+  target_slug: string;
   relation_type: string;
   context: string | null;
-  source_slug?: string;
-  target_slug?: string;
-  source_title?: string;
-  target_title?: string;
 }

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { PruvaClient } from "../client.js";
-import type { Feature } from "../types.js";
+import type { FeatureDetail, FeatureSummary } from "../types.js";
 import { jsonResult, wrapToolHandler } from "./helpers.js";
 
 export function registerFeatureTools(server: McpServer, client: PruvaClient) {
@@ -10,34 +10,47 @@ export function registerFeatureTools(server: McpServer, client: PruvaClient) {
     "List all features for a product",
     { productId: z.string().describe("The product UUID") },
     wrapToolHandler(async ({ productId }) => {
-      const data = await client.call<Feature[]>("list_features", { productId });
+      const data = await client.call<FeatureSummary[]>("list_features", {
+        productId,
+      });
       return jsonResult(data);
     }),
   );
 
   server.tool(
     "pruva_get_feature",
-    "Get details of a specific feature",
-    { featureId: z.string().describe("The feature UUID") },
-    wrapToolHandler(async ({ featureId }) => {
-      const data = await client.call<Feature>("get_feature", { featureId });
+    "Get details of a specific feature by slug",
+    {
+      productId: z.string().describe("The product UUID"),
+      slug: z.string().describe("The feature slug"),
+    },
+    wrapToolHandler(async ({ productId, slug }) => {
+      const data = await client.call<FeatureDetail>("get_feature", {
+        productId,
+        slug,
+      });
       return jsonResult(data);
     }),
   );
 
   server.tool(
     "pruva_create_feature",
-    "Create a new feature within a product. Automatically scaffolds initial documents.",
+    "Create a new feature within a product",
     {
       productId: z.string().describe("The product UUID"),
+      slug: z.string().describe("URL-safe feature slug (unique per product)"),
       title: z.string().describe("Feature title"),
-      brief: z.string().optional().describe("Short description of the feature"),
+      content: z
+        .string()
+        .optional()
+        .describe("Initial feature content (YAML). Defaults to a title-only stub."),
     },
-    wrapToolHandler(async ({ productId, title, brief }) => {
-      const data = await client.call<Feature>("create_feature", {
+    wrapToolHandler(async ({ productId, slug, title, content }) => {
+      const data = await client.call<FeatureDetail>("create_feature", {
         productId,
+        slug,
         title,
-        brief,
+        content,
       });
       return jsonResult(data);
     }),
@@ -45,17 +58,17 @@ export function registerFeatureTools(server: McpServer, client: PruvaClient) {
 
   server.tool(
     "pruva_update_feature",
-    "Update a feature's title or status",
+    "Update a feature's content",
     {
-      featureId: z.string().describe("The feature UUID"),
-      title: z.string().optional().describe("New title"),
-      status: z.string().optional().describe("New status (e.g. in-progress, done)"),
+      productId: z.string().describe("The product UUID"),
+      slug: z.string().describe("The feature slug"),
+      content: z.string().describe("New feature content (YAML)"),
     },
-    wrapToolHandler(async ({ featureId, title, status }) => {
-      const data = await client.call<Feature>("update_feature", {
-        featureId,
-        title,
-        status,
+    wrapToolHandler(async ({ productId, slug, content }) => {
+      const data = await client.call<FeatureSummary>("update_feature", {
+        productId,
+        slug,
+        content,
       });
       return jsonResult(data);
     }),

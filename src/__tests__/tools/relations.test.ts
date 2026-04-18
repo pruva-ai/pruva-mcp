@@ -27,10 +27,10 @@ describe("pruva_get_feature_relations", () => {
   it("sends correct action and productId", async () => {
     const relations = [
       {
-        id: "r1",
-        source_feature: "f1",
-        target_feature: "f2",
+        source_slug: "auth",
+        target_slug: "profile",
         relation_type: "depends_on",
+        context: "Profile editing requires authentication",
       },
     ];
     mockCall.mockResolvedValue(relations);

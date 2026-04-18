@@ -36,70 +36,109 @@ describe("pruva_list_features", () => {
       productId: "p1",
     });
   });
+
+  it("returns slug-based feature summaries", async () => {
+    const features = [
+      { slug: "auth", title: "Authentication", content: "title: Authentication\n" },
+    ];
+    mockCall.mockResolvedValue(features);
+
+    const result = await client.callTool({
+      name: "pruva_list_features",
+      arguments: { productId: "p1" },
+    });
+
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify(features, null, 2) },
+    ]);
+  });
 });
 
 describe("pruva_get_feature", () => {
-  it("sends correct action and featureId", async () => {
-    mockCall.mockResolvedValue({ id: "f1" });
+  it("sends productId and slug", async () => {
+    mockCall.mockResolvedValue({
+      slug: "auth",
+      title: "Auth",
+      content: "title: Auth\n",
+      wireframes: {},
+    });
 
     await client.callTool({
       name: "pruva_get_feature",
-      arguments: { featureId: "f1" },
+      arguments: { productId: "p1", slug: "auth" },
     });
 
-    expect(mockCall).toHaveBeenCalledWith("get_feature", { featureId: "f1" });
+    expect(mockCall).toHaveBeenCalledWith("get_feature", {
+      productId: "p1",
+      slug: "auth",
+    });
   });
 });
 
 describe("pruva_create_feature", () => {
-  it("sends productId, title, and brief", async () => {
-    mockCall.mockResolvedValue({ id: "f-new" });
+  it("sends productId, slug, title, and content", async () => {
+    mockCall.mockResolvedValue({
+      slug: "auth",
+      title: "Auth",
+      content: "title: Auth\n",
+    });
 
     await client.callTool({
       name: "pruva_create_feature",
       arguments: {
         productId: "p1",
+        slug: "auth",
         title: "Auth",
-        brief: "User authentication",
+        content: "title: Auth\n",
       },
     });
 
     expect(mockCall).toHaveBeenCalledWith("create_feature", {
       productId: "p1",
+      slug: "auth",
       title: "Auth",
-      brief: "User authentication",
+      content: "title: Auth\n",
     });
   });
 
-  it("sends undefined brief when not provided", async () => {
-    mockCall.mockResolvedValue({ id: "f-new" });
+  it("sends undefined content when not provided", async () => {
+    mockCall.mockResolvedValue({
+      slug: "auth",
+      title: "Auth",
+      content: "title: Auth\n",
+    });
 
     await client.callTool({
       name: "pruva_create_feature",
-      arguments: { productId: "p1", title: "Auth" },
+      arguments: { productId: "p1", slug: "auth", title: "Auth" },
     });
 
     expect(mockCall).toHaveBeenCalledWith("create_feature", {
       productId: "p1",
+      slug: "auth",
       title: "Auth",
-      brief: undefined,
+      content: undefined,
     });
   });
 });
 
 describe("pruva_update_feature", () => {
-  it("sends featureId and optional fields", async () => {
-    mockCall.mockResolvedValue({ id: "f1" });
+  it("sends productId, slug, and content", async () => {
+    mockCall.mockResolvedValue({ slug: "auth", content: "title: Updated\n" });
 
     await client.callTool({
       name: "pruva_update_feature",
-      arguments: { featureId: "f1", title: "New Title", status: "done" },
+      arguments: {
+        productId: "p1",
+        slug: "auth",
+        content: "title: Updated\n",
+      },
     });
 
     expect(mockCall).toHaveBeenCalledWith("update_feature", {
-      featureId: "f1",
-      title: "New Title",
-      status: "done",
+      productId: "p1",
+      slug: "auth",
+      content: "title: Updated\n",
     });
   });
 
@@ -108,12 +147,10 @@ describe("pruva_update_feature", () => {
 
     const result = await client.callTool({
       name: "pruva_update_feature",
-      arguments: { featureId: "f1" },
+      arguments: { productId: "p1", slug: "auth", content: "x" },
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content).toEqual([
-      { type: "text", text: "Forbidden" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "Forbidden" }]);
   });
 });
