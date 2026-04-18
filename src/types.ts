@@ -11,7 +11,7 @@ export type PruvaAction =
   | "create_document"
   | "update_document"
   | "search_documents"
-  | "get_feature_relations";
+  | "list_feature_relations";
 
 /** Shape returned by the Pruva API on success */
 export interface PruvaApiResponse<T = unknown> {

@@ -93,7 +93,7 @@ export function registerProductResources(
     { mimeType: "application/json" },
     async (uri, { productId }) => {
       const data = await client.call<FeatureRelation[]>(
-        "get_feature_relations",
+        "list_feature_relations",
         { productId: productId as string },
       );
       return {
