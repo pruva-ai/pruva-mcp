@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PruvaClient } from "./client.js";
+import { registerChatTools } from "./tools/chat.js";
 import { registerDocumentTools } from "./tools/documents.js";
 import { registerFeatureTools } from "./tools/features.js";
 import { registerProductTools } from "./tools/products.js";
@@ -18,6 +19,7 @@ export function createPruvaServer(client: PruvaClient): McpServer {
   registerFeatureTools(server, client);
   registerDocumentTools(server, client);
   registerRelationTools(server, client);
+  registerChatTools(server, client);
 
   // Register resources
   registerProductResources(server, client);

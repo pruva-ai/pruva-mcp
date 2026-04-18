@@ -19,13 +19,13 @@ npx vitest run src/__tests__/client.test.ts
 
 ## Architecture
 
-This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 12 tools and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
+This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 13 tools and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
 
 ### Core flow
 
 `src/index.ts` (entry point) → creates `PruvaClient` → passes it to `createPruvaServer()` → connects transport (stdio or HTTP).
 
-- **`src/client.ts`** — `PruvaClient` POSTs all requests to `{baseUrl}/api/mcp/data` with an action name and params. Returns unwrapped `data` from `{ data: T }` response.
+- **`src/client.ts`** — `PruvaClient` has two methods: `.call()` POSTs to `{baseUrl}/api/mcp/data` with an action name and params (for data tools), and `.chat()` POSTs to `{baseUrl}/api/mcp/chat` (for the analysis agent). Both return unwrapped `data` from `{ data: T }` response.
 - **`src/server.ts`** — Factory that creates an `McpServer` and registers all tool/resource modules.
 - **`src/types.ts`** — Domain types (`Product`, `Feature`, `DocumentMeta`, `DocumentFull`, `SearchResult`, `FeatureRelation`) and the `PruvaAction` union type.
 
@@ -37,6 +37,7 @@ Each module exports a `register*Tools(server, client)` function. All tool handle
 - `features.ts` — 4 tools (list, get, create, update)
 - `documents.ts` — 5 tools (list, get, create, update, search)
 - `relations.ts` — 1 tool (list_feature_relations)
+- `chat.ts` — 1 tool (ask)
 
 ### Resources (`src/resources/`)
 

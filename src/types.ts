@@ -68,3 +68,22 @@ export interface FeatureRelation {
   relation_type: string;
   context: string | null;
 }
+
+// ── Chat endpoint types ──────────────────────────────────────
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatRequest {
+  productId: string;
+  message: string;
+  history?: ChatMessage[];
+  featureSlug?: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  usage: { input_tokens: number; output_tokens: number };
+}
