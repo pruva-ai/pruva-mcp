@@ -25,7 +25,14 @@ beforeEach(() => {
 
 describe("pruva_list_products", () => {
   it("calls client.call with correct action", async () => {
-    const products = [{ id: "p1", name: "Product A" }];
+    const products = [
+      {
+        id: "p1",
+        name: "Product A",
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-02T00:00:00Z",
+      },
+    ];
     mockCall.mockResolvedValue(products);
 
     await client.callTool({ name: "pruva_list_products", arguments: {} });
@@ -34,7 +41,14 @@ describe("pruva_list_products", () => {
   });
 
   it("returns product list as formatted JSON", async () => {
-    const products = [{ id: "p1", name: "Product A" }];
+    const products = [
+      {
+        id: "p1",
+        name: "Product A",
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-02T00:00:00Z",
+      },
+    ];
     mockCall.mockResolvedValue(products);
 
     const result = await client.callTool({
@@ -50,7 +64,14 @@ describe("pruva_list_products", () => {
 
 describe("pruva_get_product", () => {
   it("calls client.call with correct action and params", async () => {
-    mockCall.mockResolvedValue({ id: "p1", name: "Product A" });
+    mockCall.mockResolvedValue({
+      id: "p1",
+      name: "Product A",
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-02T00:00:00Z",
+      feature_count: 3,
+      document_count: 5,
+    });
 
     await client.callTool({
       name: "pruva_get_product",
@@ -58,6 +79,27 @@ describe("pruva_get_product", () => {
     });
 
     expect(mockCall).toHaveBeenCalledWith("get_product", { productId: "p1" });
+  });
+
+  it("surfaces feature_count and document_count in output", async () => {
+    const detail = {
+      id: "p1",
+      name: "Product A",
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-02T00:00:00Z",
+      feature_count: 3,
+      document_count: 5,
+    };
+    mockCall.mockResolvedValue(detail);
+
+    const result = await client.callTool({
+      name: "pruva_get_product",
+      arguments: { productId: "p1" },
+    });
+
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify(detail, null, 2) },
+    ]);
   });
 
   it("returns error on API failure", async () => {
@@ -69,8 +111,6 @@ describe("pruva_get_product", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content).toEqual([
-      { type: "text", text: "Not found" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "Not found" }]);
   });
 });

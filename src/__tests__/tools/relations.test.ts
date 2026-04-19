@@ -23,24 +23,24 @@ beforeEach(() => {
   mockCall.mockReset();
 });
 
-describe("pruva_get_feature_relations", () => {
+describe("pruva_list_feature_relations", () => {
   it("sends correct action and productId", async () => {
     const relations = [
       {
-        id: "r1",
-        source_feature: "f1",
-        target_feature: "f2",
+        source_slug: "auth",
+        target_slug: "profile",
         relation_type: "depends_on",
+        context: "Profile editing requires authentication",
       },
     ];
     mockCall.mockResolvedValue(relations);
 
     const result = await client.callTool({
-      name: "pruva_get_feature_relations",
+      name: "pruva_list_feature_relations",
       arguments: { productId: "p1" },
     });
 
-    expect(mockCall).toHaveBeenCalledWith("get_feature_relations", {
+    expect(mockCall).toHaveBeenCalledWith("list_feature_relations", {
       productId: "p1",
     });
     expect(result.content).toEqual([

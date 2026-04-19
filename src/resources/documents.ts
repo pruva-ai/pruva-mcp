@@ -1,6 +1,6 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PruvaClient } from "../client.js";
-import type { DocumentFull, DocumentMeta, Product } from "../types.js";
+import type { DocumentFull, DocumentSummary, Product } from "../types.js";
 
 export function registerDocumentResources(
   server: McpServer,
@@ -23,7 +23,7 @@ export function registerDocumentResources(
     }),
     { mimeType: "application/json" },
     async (uri, { productId }) => {
-      const data = await client.call<DocumentMeta[]>("list_documents", {
+      const data = await client.call<DocumentSummary[]>("list_documents", {
         productId: productId as string,
       });
       return {
@@ -38,16 +38,22 @@ export function registerDocumentResources(
     },
   );
 
-  // ── Single document content ─────────────────────────────────
+  // ── Single document content (path-based) ────────────────────
+  // URI format: pruva://products/{productId}/documents/{path}
+  // `path` may contain slashes — the MCP SDK URI template handles single segments,
+  // so clients should URL-encode slashes in nested paths (e.g. "features%2Fauth.md").
   server.resource(
     "document",
-    new ResourceTemplate("pruva://documents/{documentId}", {
-      list: undefined,
-    }),
+    new ResourceTemplate(
+      "pruva://products/{productId}/documents/{path}",
+      { list: undefined },
+    ),
     { mimeType: "text/markdown" },
-    async (uri, { documentId }) => {
+    async (uri, { productId, path }) => {
+      const decodedPath = decodeURIComponent(path as string);
       const data = await client.call<DocumentFull>("get_document", {
-        documentId: documentId as string,
+        productId: productId as string,
+        path: decodedPath,
       });
       return {
         contents: [

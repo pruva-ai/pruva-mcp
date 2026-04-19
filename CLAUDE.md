@@ -19,13 +19,13 @@ npx vitest run src/__tests__/client.test.ts
 
 ## Architecture
 
-This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 12 tools and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
+This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 13 tools and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
 
 ### Core flow
 
 `src/index.ts` (entry point) → creates `PruvaClient` → passes it to `createPruvaServer()` → connects transport (stdio or HTTP).
 
-- **`src/client.ts`** — `PruvaClient` POSTs all requests to `{baseUrl}/api/mcp/data` with an action name and params. Returns unwrapped `data` from `{ data: T }` response.
+- **`src/client.ts`** — `PruvaClient` has two methods: `.call()` POSTs to `{baseUrl}/api/mcp/data` with an action name and params (for data tools), and `.chat()` POSTs to `{baseUrl}/api/mcp/chat` (for the analysis agent). Both return unwrapped `data` from `{ data: T }` response.
 - **`src/server.ts`** — Factory that creates an `McpServer` and registers all tool/resource modules.
 - **`src/types.ts`** — Domain types (`Product`, `Feature`, `DocumentMeta`, `DocumentFull`, `SearchResult`, `FeatureRelation`) and the `PruvaAction` union type.
 
@@ -36,7 +36,8 @@ Each module exports a `register*Tools(server, client)` function. All tool handle
 - `products.ts` — 2 tools (list, get)
 - `features.ts` — 4 tools (list, get, create, update)
 - `documents.ts` — 5 tools (list, get, create, update, search)
-- `relations.ts` — 1 tool (get_feature_relations)
+- `relations.ts` — 1 tool (list_feature_relations)
+- `chat.ts` — 1 tool (ask)
 
 ### Resources (`src/resources/`)
 
@@ -55,4 +56,6 @@ Test files live in `src/__tests__/` mirroring the source structure. The vitest c
 
 ## Environment
 
-Requires `PRUVA_API_KEY` env var (or set in `.env`). Optional: `PRUVA_BASE_URL` (default: `https://app.pruva.io`), `PORT` (default: 3100, HTTP mode only).
+Resolves `apiKey` and `baseUrl` from (in order): `PRUVA_API_KEY` / `PRUVA_BASE_URL` env vars, then `~/.pruva/config.json` (shared with `pruva-cli`), then default `baseUrl` `https://app.pruva.io`. Users typically run `pruva config set-key <key>` once; no env var needed in the MCP server config. Optional: `PORT` (default: 3100, HTTP mode only).
+
+See `src/config.ts` for the resolver.

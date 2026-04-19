@@ -24,8 +24,10 @@ beforeEach(() => {
 });
 
 describe("pruva_list_documents", () => {
-  it("sends productId with no optional filters", async () => {
-    mockCall.mockResolvedValue([]);
+  it("sends productId", async () => {
+    mockCall.mockResolvedValue([
+      { path: "overview.md", content_preview: "# Overview" },
+    ]);
 
     await client.callTool({
       name: "pruva_list_documents",
@@ -34,113 +36,73 @@ describe("pruva_list_documents", () => {
 
     expect(mockCall).toHaveBeenCalledWith("list_documents", {
       productId: "p1",
-      docType: undefined,
-      featureId: undefined,
-    });
-  });
-
-  it("sends optional docType and featureId", async () => {
-    mockCall.mockResolvedValue([]);
-
-    await client.callTool({
-      name: "pruva_list_documents",
-      arguments: { productId: "p1", docType: "prd", featureId: "f1" },
-    });
-
-    expect(mockCall).toHaveBeenCalledWith("list_documents", {
-      productId: "p1",
-      docType: "prd",
-      featureId: "f1",
     });
   });
 });
 
 describe("pruva_get_document", () => {
-  it("sends documentId", async () => {
-    mockCall.mockResolvedValue({ id: "d1", content: "# Hello" });
+  it("sends productId and path", async () => {
+    mockCall.mockResolvedValue({ path: "overview.md", content: "# Overview" });
 
     await client.callTool({
       name: "pruva_get_document",
-      arguments: { documentId: "d1" },
+      arguments: { productId: "p1", path: "overview.md" },
     });
 
     expect(mockCall).toHaveBeenCalledWith("get_document", {
-      documentId: "d1",
+      productId: "p1",
+      path: "overview.md",
     });
   });
 });
 
 describe("pruva_create_document", () => {
-  it("sends all required and optional fields", async () => {
-    mockCall.mockResolvedValue({ id: "d-new" });
+  it("sends productId, path, and content", async () => {
+    mockCall.mockResolvedValue({ path: "prd.md", content: "# PRD" });
 
     await client.callTool({
       name: "pruva_create_document",
       arguments: {
         productId: "p1",
-        path: "features/auth/spec.md",
-        content: "# Auth Spec",
-        docType: "feature-content",
-        featureId: "f1",
-      },
-    });
-
-    expect(mockCall).toHaveBeenCalledWith("create_document", {
-      productId: "p1",
-      path: "features/auth/spec.md",
-      content: "# Auth Spec",
-      docType: "feature-content",
-      featureId: "f1",
-    });
-  });
-
-  it("sends undefined featureId when not provided", async () => {
-    mockCall.mockResolvedValue({ id: "d-new" });
-
-    await client.callTool({
-      name: "pruva_create_document",
-      arguments: {
-        productId: "p1",
-        path: "docs/prd.md",
+        path: "prd.md",
         content: "# PRD",
-        docType: "prd",
       },
     });
 
     expect(mockCall).toHaveBeenCalledWith("create_document", {
       productId: "p1",
-      path: "docs/prd.md",
+      path: "prd.md",
       content: "# PRD",
-      docType: "prd",
-      featureId: undefined,
     });
   });
 });
 
 describe("pruva_update_document", () => {
-  it("sends documentId with optional content and path", async () => {
-    mockCall.mockResolvedValue({ id: "d1" });
+  it("sends productId, path, and content", async () => {
+    mockCall.mockResolvedValue({ path: "prd.md", content: "Updated" });
 
     await client.callTool({
       name: "pruva_update_document",
       arguments: {
-        documentId: "d1",
-        content: "Updated content",
-        path: "new/path.md",
+        productId: "p1",
+        path: "prd.md",
+        content: "Updated",
       },
     });
 
     expect(mockCall).toHaveBeenCalledWith("update_document", {
-      documentId: "d1",
-      content: "Updated content",
-      path: "new/path.md",
+      productId: "p1",
+      path: "prd.md",
+      content: "Updated",
     });
   });
 });
 
 describe("pruva_search_documents", () => {
   it("sends productId and query", async () => {
-    mockCall.mockResolvedValue([]);
+    mockCall.mockResolvedValue([
+      { path: "overview.md", content_snippet: "...authentication..." },
+    ]);
 
     await client.callTool({
       name: "pruva_search_documents",
