@@ -56,4 +56,6 @@ Test files live in `src/__tests__/` mirroring the source structure. The vitest c
 
 ## Environment
 
-Requires `PRUVA_API_KEY` env var (or set in `.env`). Optional: `PRUVA_BASE_URL` (default: `https://app.pruva.io`), `PORT` (default: 3100, HTTP mode only).
+Resolves `apiKey` and `baseUrl` from (in order): `PRUVA_API_KEY` / `PRUVA_BASE_URL` env vars, then `~/.pruva/config.json` (shared with `pruva-cli`), then default `baseUrl` `https://app.pruva.io`. Users typically run `pruva config set-key <key>` once; no env var needed in the MCP server config. Optional: `PORT` (default: 3100, HTTP mode only).
+
+See `src/config.ts` for the resolver.
