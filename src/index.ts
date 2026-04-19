@@ -4,17 +4,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
 import { PruvaClient } from "./client.js";
+import { resolveConfig } from "./config.js";
 import { createPruvaServer } from "./server.js";
 
 // ── Configuration ─────────────────────────────────────────────
 
-const apiKey = process.env.PRUVA_API_KEY;
-if (!apiKey) {
-  console.error("Error: PRUVA_API_KEY environment variable is required");
+let apiKey: string;
+let baseUrl: string;
+try {
+  ({ apiKey, baseUrl } = resolveConfig());
+} catch (err) {
+  console.error(`Error: ${(err as Error).message}`);
   process.exit(1);
 }
-
-const baseUrl = process.env.PRUVA_BASE_URL || "https://app.pruva.io";
 const port = parseInt(process.env.PORT || "3100", 10);
 const useHttp = process.argv.includes("--http");
 
