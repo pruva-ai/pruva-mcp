@@ -1,5 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  mkdtempSync,
+  rmSync,
+  mkdirSync,
+  writeFileSync,
+  chmodSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -60,5 +66,41 @@ describe("resolveConfig (mcp)", () => {
     process.env.PRUVA_API_KEY = "pk_x";
     const { resolveConfig } = await import("../config.js");
     expect(resolveConfig().baseUrl).toBe("https://app.pruva.io");
+  });
+
+  it("warns on loose file permissions but still returns the key", async () => {
+    mkdirSync(join(tmpHome, ".pruva"), { recursive: true });
+    const cfgPath = join(tmpHome, ".pruva", "config.json");
+    writeFileSync(cfgPath, JSON.stringify({ apiKey: "pk_loose" }));
+    chmodSync(cfgPath, 0o644);
+    const stderrSpy = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation(() => true);
+    const { resolveConfig } = await import("../config.js");
+    expect(resolveConfig().apiKey).toBe("pk_loose");
+    const warnings = stderrSpy.mock.calls
+      .map((c) => String(c[0]))
+      .filter((s) => s.includes("loose permissions"));
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0]).toContain("mode 644");
+    expect(warnings[0]).toContain("chmod 600");
+    stderrSpy.mockRestore();
+  });
+
+  it("does not warn when file is 0600", async () => {
+    mkdirSync(join(tmpHome, ".pruva"), { recursive: true });
+    const cfgPath = join(tmpHome, ".pruva", "config.json");
+    writeFileSync(cfgPath, JSON.stringify({ apiKey: "pk_tight" }));
+    chmodSync(cfgPath, 0o600);
+    const stderrSpy = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation(() => true);
+    const { resolveConfig } = await import("../config.js");
+    expect(resolveConfig().apiKey).toBe("pk_tight");
+    const warnings = stderrSpy.mock.calls
+      .map((c) => String(c[0]))
+      .filter((s) => s.includes("loose permissions"));
+    expect(warnings.length).toBe(0);
+    stderrSpy.mockRestore();
   });
 });
