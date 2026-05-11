@@ -11,7 +11,7 @@ import { registerDocumentResources } from "./resources/documents.js";
 export function createPruvaServer(client: PruvaClient): McpServer {
   const server = new McpServer({
     name: "pruva",
-    version: "1.0.0",
+    version: "0.3.0",
   });
 
   // Register tools
