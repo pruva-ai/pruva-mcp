@@ -26,3 +26,14 @@ export function jsonResult(data: unknown): CallToolResult {
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
   };
 }
+
+/**
+ * Helper to return the server-rendered markdown body of a data API
+ * envelope as a tool result. This is the stable contract that
+ * isolates the MCP server from JSONB schema changes on the server.
+ */
+export function markdownResult(markdown: string): CallToolResult {
+  return {
+    content: [{ type: "text", text: markdown }],
+  };
+}

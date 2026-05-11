@@ -6,6 +6,10 @@ import { createPruvaServer } from "../../server.js";
 let mockCall: ReturnType<typeof vi.fn>;
 let client: Client;
 
+function envelope<T>(data: T, markdown = "# md") {
+  return { data, markdown };
+}
+
 beforeAll(async () => {
   mockCall = vi.fn();
   const mockPruvaClient = { call: mockCall } as unknown as PruvaClient;
@@ -25,9 +29,9 @@ beforeEach(() => {
 
 describe("pruva_list_documents", () => {
   it("sends productId", async () => {
-    mockCall.mockResolvedValue([
-      { path: "overview.md", content_preview: "# Overview" },
-    ]);
+    mockCall.mockResolvedValue(
+      envelope([{ path: "overview.md", content_preview: "# Overview" }]),
+    );
 
     await client.callTool({
       name: "pruva_list_documents",
@@ -42,7 +46,7 @@ describe("pruva_list_documents", () => {
 
 describe("pruva_get_document", () => {
   it("sends productId and path", async () => {
-    mockCall.mockResolvedValue({ path: "overview.md", content: "# Overview" });
+    mockCall.mockResolvedValue(envelope({ path: "overview.md", content: "# Overview" }));
 
     await client.callTool({
       name: "pruva_get_document",
@@ -58,7 +62,7 @@ describe("pruva_get_document", () => {
 
 describe("pruva_create_document", () => {
   it("sends productId, path, and content", async () => {
-    mockCall.mockResolvedValue({ path: "prd.md", content: "# PRD" });
+    mockCall.mockResolvedValue(envelope({ path: "prd.md", content: "# PRD" }));
 
     await client.callTool({
       name: "pruva_create_document",
@@ -79,7 +83,7 @@ describe("pruva_create_document", () => {
 
 describe("pruva_update_document", () => {
   it("sends productId, path, and content", async () => {
-    mockCall.mockResolvedValue({ path: "prd.md", content: "Updated" });
+    mockCall.mockResolvedValue(envelope({ path: "prd.md", content: "Updated" }));
 
     await client.callTool({
       name: "pruva_update_document",
@@ -100,9 +104,9 @@ describe("pruva_update_document", () => {
 
 describe("pruva_search_documents", () => {
   it("sends productId and query", async () => {
-    mockCall.mockResolvedValue([
-      { path: "overview.md", content_snippet: "...authentication..." },
-    ]);
+    mockCall.mockResolvedValue(
+      envelope([{ path: "overview.md", content_snippet: "...authentication..." }]),
+    );
 
     await client.callTool({
       name: "pruva_search_documents",

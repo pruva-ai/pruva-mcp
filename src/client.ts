@@ -18,7 +18,7 @@ export class PruvaClient {
   async call<T = unknown>(
     action: PruvaAction,
     params: Record<string, unknown> = {},
-  ): Promise<T> {
+  ): Promise<PruvaApiResponse<T>> {
     const url = `${this.baseUrl}/api/mcp/data`;
 
     const res = await fetch(url, {
@@ -41,8 +41,7 @@ export class PruvaClient {
       throw new Error(message);
     }
 
-    const body = (await res.json()) as PruvaApiResponse<T>;
-    return body.data;
+    return (await res.json()) as PruvaApiResponse<T>;
   }
 
   async chat(params: ChatRequest): Promise<ChatResponse> {

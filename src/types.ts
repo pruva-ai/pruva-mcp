@@ -16,6 +16,7 @@ export type PruvaAction =
 /** Shape returned by the Pruva API on success */
 export interface PruvaApiResponse<T = unknown> {
   data: T;
+  markdown: string;
 }
 
 /** Shape returned by the Pruva API on error */

@@ -33,7 +33,8 @@ describe("pruva_list_feature_relations", () => {
         context: "Profile editing requires authentication",
       },
     ];
-    mockCall.mockResolvedValue(relations);
+    const md = "# Feature Relations\n\n- `auth` → `profile` _(depends_on)_";
+    mockCall.mockResolvedValue({ data: relations, markdown: md });
 
     const result = await client.callTool({
       name: "pruva_list_feature_relations",
@@ -43,8 +44,6 @@ describe("pruva_list_feature_relations", () => {
     expect(mockCall).toHaveBeenCalledWith("list_feature_relations", {
       productId: "p1",
     });
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify(relations, null, 2) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: md }]);
   });
 });

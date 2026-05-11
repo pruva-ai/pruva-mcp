@@ -11,27 +11,27 @@ export function registerDocumentResources(
     "product-documents",
     new ResourceTemplate("pruva://products/{productId}/documents", {
       list: async () => {
-        const products = await client.call<Product[]>("list_products");
+        const env = await client.call<Product[]>("list_products");
         return {
-          resources: products.map((p) => ({
+          resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}/documents`,
             name: `${p.name} — Documents`,
-            mimeType: "application/json" as const,
+            mimeType: "text/markdown" as const,
           })),
         };
       },
     }),
-    { mimeType: "application/json" },
+    { mimeType: "text/markdown" },
     async (uri, { productId }) => {
-      const data = await client.call<DocumentSummary[]>("list_documents", {
+      const env = await client.call<DocumentSummary[]>("list_documents", {
         productId: productId as string,
       });
       return {
         contents: [
           {
             uri: uri.href,
-            mimeType: "application/json" as const,
-            text: JSON.stringify(data, null, 2),
+            mimeType: "text/markdown" as const,
+            text: env.markdown,
           },
         ],
       };
@@ -51,7 +51,7 @@ export function registerDocumentResources(
     { mimeType: "text/markdown" },
     async (uri, { productId, path }) => {
       const decodedPath = decodeURIComponent(path as string);
-      const data = await client.call<DocumentFull>("get_document", {
+      const env = await client.call<DocumentFull>("get_document", {
         productId: productId as string,
         path: decodedPath,
       });
@@ -60,7 +60,7 @@ export function registerDocumentResources(
           {
             uri: uri.href,
             mimeType: "text/markdown" as const,
-            text: data.content ?? "",
+            text: env.data.content ?? "",
           },
         ],
       };

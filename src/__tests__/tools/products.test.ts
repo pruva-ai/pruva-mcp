@@ -6,6 +6,10 @@ import { createPruvaServer } from "../../server.js";
 let mockCall: ReturnType<typeof vi.fn>;
 let client: Client;
 
+function envelope<T>(data: T, markdown = "# md") {
+  return { data, markdown };
+}
+
 beforeAll(async () => {
   mockCall = vi.fn();
   const mockPruvaClient = { call: mockCall } as unknown as PruvaClient;
@@ -33,45 +37,36 @@ describe("pruva_list_products", () => {
         updated_at: "2026-01-02T00:00:00Z",
       },
     ];
-    mockCall.mockResolvedValue(products);
+    mockCall.mockResolvedValue(envelope(products, "# Products\n\n## Product A"));
 
     await client.callTool({ name: "pruva_list_products", arguments: {} });
 
     expect(mockCall).toHaveBeenCalledWith("list_products");
   });
 
-  it("returns product list as formatted JSON", async () => {
-    const products = [
-      {
-        id: "p1",
-        name: "Product A",
-        created_at: "2026-01-01T00:00:00Z",
-        updated_at: "2026-01-02T00:00:00Z",
-      },
-    ];
-    mockCall.mockResolvedValue(products);
+  it("returns the server-rendered markdown body", async () => {
+    const md = "# Products\n\n## Product A";
+    mockCall.mockResolvedValue(envelope([{ id: "p1" }], md));
 
     const result = await client.callTool({
       name: "pruva_list_products",
       arguments: {},
     });
 
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify(products, null, 2) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: md }]);
   });
 });
 
 describe("pruva_get_product", () => {
   it("calls client.call with correct action and params", async () => {
-    mockCall.mockResolvedValue({
-      id: "p1",
-      name: "Product A",
-      created_at: "2026-01-01T00:00:00Z",
-      updated_at: "2026-01-02T00:00:00Z",
-      feature_count: 3,
-      document_count: 5,
-    });
+    mockCall.mockResolvedValue(
+      envelope({
+        id: "p1",
+        name: "Product A",
+        feature_count: 3,
+        document_count: 5,
+      }),
+    );
 
     await client.callTool({
       name: "pruva_get_product",
@@ -81,25 +76,16 @@ describe("pruva_get_product", () => {
     expect(mockCall).toHaveBeenCalledWith("get_product", { productId: "p1" });
   });
 
-  it("surfaces feature_count and document_count in output", async () => {
-    const detail = {
-      id: "p1",
-      name: "Product A",
-      created_at: "2026-01-01T00:00:00Z",
-      updated_at: "2026-01-02T00:00:00Z",
-      feature_count: 3,
-      document_count: 5,
-    };
-    mockCall.mockResolvedValue(detail);
+  it("returns the server-rendered markdown body", async () => {
+    const md = "# Product A\n\nFeatures: 3\nDocuments: 5";
+    mockCall.mockResolvedValue(envelope({ id: "p1" }, md));
 
     const result = await client.callTool({
       name: "pruva_get_product",
       arguments: { productId: "p1" },
     });
 
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify(detail, null, 2) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: md }]);
   });
 
   it("returns error on API failure", async () => {

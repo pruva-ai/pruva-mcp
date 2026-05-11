@@ -6,86 +6,86 @@ import type {
   DocumentSummary,
   SearchResult,
 } from "../types.js";
-import { jsonResult, wrapToolHandler } from "./helpers.js";
+import { markdownResult, wrapToolHandler } from "./helpers.js";
 
 export function registerDocumentTools(server: McpServer, client: PruvaClient) {
   server.tool(
     "pruva_list_documents",
-    "List all context documents for a product (with content previews)",
+    "List all context documents for a product (with content previews). Returns a markdown summary.",
     { productId: z.string().describe("The product UUID") },
     wrapToolHandler(async ({ productId }) => {
-      const data = await client.call<DocumentSummary[]>("list_documents", {
+      const env = await client.call<DocumentSummary[]>("list_documents", {
         productId,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 
   server.tool(
     "pruva_get_document",
-    "Get a document's full content by path",
+    "Get a document's full content by path. Returns markdown.",
     {
       productId: z.string().describe("The product UUID"),
       path: z.string().describe("The document path (e.g. overview.md)"),
     },
     wrapToolHandler(async ({ productId, path }) => {
-      const data = await client.call<DocumentFull>("get_document", {
+      const env = await client.call<DocumentFull>("get_document", {
         productId,
         path,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 
   server.tool(
     "pruva_create_document",
-    "Create a new context document within a product",
+    "Create a new context document within a product. Returns a markdown confirmation.",
     {
       productId: z.string().describe("The product UUID"),
       path: z.string().describe("Document path (e.g. overview.md)"),
       content: z.string().describe("Document content (Markdown)"),
     },
     wrapToolHandler(async ({ productId, path, content }) => {
-      const data = await client.call<DocumentFull>("create_document", {
+      const env = await client.call<DocumentFull>("create_document", {
         productId,
         path,
         content,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 
   server.tool(
     "pruva_update_document",
-    "Update an existing context document's content",
+    "Update an existing context document's content. Returns a markdown confirmation.",
     {
       productId: z.string().describe("The product UUID"),
       path: z.string().describe("The document path"),
       content: z.string().describe("New document content"),
     },
     wrapToolHandler(async ({ productId, path, content }) => {
-      const data = await client.call<DocumentFull>("update_document", {
+      const env = await client.call<DocumentFull>("update_document", {
         productId,
         path,
         content,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 
   server.tool(
     "pruva_search_documents",
-    "Search context documents by content within a product",
+    "Search context documents by content within a product. Returns a markdown list of matches.",
     {
       productId: z.string().describe("The product UUID"),
       query: z.string().describe("Search query string"),
     },
     wrapToolHandler(async ({ productId, query }) => {
-      const data = await client.call<SearchResult[]>("search_documents", {
+      const env = await client.call<SearchResult[]>("search_documents", {
         productId,
         query,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 }

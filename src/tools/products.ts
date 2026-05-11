@@ -2,28 +2,28 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { PruvaClient } from "../client.js";
 import type { Product, ProductDetail } from "../types.js";
-import { jsonResult, wrapToolHandler } from "./helpers.js";
+import { markdownResult, wrapToolHandler } from "./helpers.js";
 
 export function registerProductTools(server: McpServer, client: PruvaClient) {
   server.tool(
     "pruva_list_products",
-    "List all active products in your Pruva workspace",
+    "List all active products in your Pruva workspace. Returns a markdown summary.",
     {},
     wrapToolHandler(async () => {
-      const data = await client.call<Product[]>("list_products");
-      return jsonResult(data);
+      const env = await client.call<Product[]>("list_products");
+      return markdownResult(env.markdown);
     }),
   );
 
   server.tool(
     "pruva_get_product",
-    "Get details of a specific product, including feature and document counts",
+    "Get details of a specific product, including feature and document counts. Returns a markdown summary.",
     { productId: z.string().describe("The product UUID") },
     wrapToolHandler(async ({ productId }) => {
-      const data = await client.call<ProductDetail>("get_product", {
+      const env = await client.call<ProductDetail>("get_product", {
         productId,
       });
-      return jsonResult(data);
+      return markdownResult(env.markdown);
     }),
   );
 }

@@ -6,6 +6,10 @@ import { createPruvaServer } from "../../server.js";
 let mockCall: ReturnType<typeof vi.fn>;
 let client: Client;
 
+function envelope<T>(data: T, markdown = "# md") {
+  return { data, markdown };
+}
+
 beforeAll(async () => {
   mockCall = vi.fn();
   const mockPruvaClient = { call: mockCall } as unknown as PruvaClient;
@@ -25,7 +29,7 @@ beforeEach(() => {
 
 describe("pruva_list_features", () => {
   it("sends correct action and productId", async () => {
-    mockCall.mockResolvedValue([]);
+    mockCall.mockResolvedValue(envelope([]));
 
     await client.callTool({
       name: "pruva_list_features",
@@ -37,31 +41,24 @@ describe("pruva_list_features", () => {
     });
   });
 
-  it("returns slug-based feature summaries", async () => {
-    const features = [
-      { slug: "auth", title: "Authentication", content: "title: Authentication\n" },
-    ];
-    mockCall.mockResolvedValue(features);
+  it("returns the server-rendered markdown body", async () => {
+    const md = "# Features\n\n## Authentication\n- **Slug:** `auth`";
+    mockCall.mockResolvedValue(envelope([{ slug: "auth" }], md));
 
     const result = await client.callTool({
       name: "pruva_list_features",
       arguments: { productId: "p1" },
     });
 
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify(features, null, 2) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: md }]);
   });
 });
 
 describe("pruva_get_feature", () => {
   it("sends productId and slug", async () => {
-    mockCall.mockResolvedValue({
-      slug: "auth",
-      title: "Auth",
-      content: "title: Auth\n",
-      wireframes: {},
-    });
+    mockCall.mockResolvedValue(
+      envelope({ slug: "auth", title: "Auth", content: "title: Auth\n", wireframes: {} }),
+    );
 
     await client.callTool({
       name: "pruva_get_feature",
@@ -77,11 +74,7 @@ describe("pruva_get_feature", () => {
 
 describe("pruva_create_feature", () => {
   it("sends productId, slug, title, and content", async () => {
-    mockCall.mockResolvedValue({
-      slug: "auth",
-      title: "Auth",
-      content: "title: Auth\n",
-    });
+    mockCall.mockResolvedValue(envelope({ slug: "auth" }));
 
     await client.callTool({
       name: "pruva_create_feature",
@@ -102,11 +95,7 @@ describe("pruva_create_feature", () => {
   });
 
   it("sends undefined content when not provided", async () => {
-    mockCall.mockResolvedValue({
-      slug: "auth",
-      title: "Auth",
-      content: "title: Auth\n",
-    });
+    mockCall.mockResolvedValue(envelope({ slug: "auth" }));
 
     await client.callTool({
       name: "pruva_create_feature",
@@ -124,7 +113,7 @@ describe("pruva_create_feature", () => {
 
 describe("pruva_update_feature", () => {
   it("sends productId, slug, and content", async () => {
-    mockCall.mockResolvedValue({ slug: "auth", content: "title: Updated\n" });
+    mockCall.mockResolvedValue(envelope({ slug: "auth", content: "title: Updated\n" }));
 
     await client.callTool({
       name: "pruva_update_feature",

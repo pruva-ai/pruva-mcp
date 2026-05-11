@@ -68,13 +68,14 @@ describe("PruvaClient", () => {
     expect(JSON.parse(init.body)).toEqual({ action: "list_products" });
   });
 
-  it("returns body.data on success", async () => {
+  it("returns the full envelope on success", async () => {
     const products = [{ id: "1", name: "Product A" }];
-    mockFetch.mockResolvedValue(jsonResponse({ data: products }));
+    const envelope = { data: products, markdown: "# Products" };
+    mockFetch.mockResolvedValue(jsonResponse(envelope));
     const client = new PruvaClient("key", "https://example.com");
 
     const result = await client.call("list_products");
-    expect(result).toEqual(products);
+    expect(result).toEqual(envelope);
   });
 
   it("throws with API error message on non-OK response", async () => {

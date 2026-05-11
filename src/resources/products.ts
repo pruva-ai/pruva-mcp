@@ -16,27 +16,27 @@ export function registerProductResources(
     "product",
     new ResourceTemplate("pruva://products/{productId}", {
       list: async () => {
-        const products = await client.call<Product[]>("list_products");
+        const env = await client.call<Product[]>("list_products");
         return {
-          resources: products.map((p) => ({
+          resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}`,
             name: p.name,
-            mimeType: "application/json" as const,
+            mimeType: "text/markdown" as const,
           })),
         };
       },
     }),
-    { mimeType: "application/json" },
+    { mimeType: "text/markdown" },
     async (uri, { productId }) => {
-      const data = await client.call<ProductDetail>("get_product", {
+      const env = await client.call<ProductDetail>("get_product", {
         productId: productId as string,
       });
       return {
         contents: [
           {
             uri: uri.href,
-            mimeType: "application/json" as const,
-            text: JSON.stringify(data, null, 2),
+            mimeType: "text/markdown" as const,
+            text: env.markdown,
           },
         ],
       };
@@ -48,27 +48,27 @@ export function registerProductResources(
     "product-features",
     new ResourceTemplate("pruva://products/{productId}/features", {
       list: async () => {
-        const products = await client.call<Product[]>("list_products");
+        const env = await client.call<Product[]>("list_products");
         return {
-          resources: products.map((p) => ({
+          resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}/features`,
             name: `${p.name} — Features`,
-            mimeType: "application/json" as const,
+            mimeType: "text/markdown" as const,
           })),
         };
       },
     }),
-    { mimeType: "application/json" },
+    { mimeType: "text/markdown" },
     async (uri, { productId }) => {
-      const data = await client.call<FeatureSummary[]>("list_features", {
+      const env = await client.call<FeatureSummary[]>("list_features", {
         productId: productId as string,
       });
       return {
         contents: [
           {
             uri: uri.href,
-            mimeType: "application/json" as const,
-            text: JSON.stringify(data, null, 2),
+            mimeType: "text/markdown" as const,
+            text: env.markdown,
           },
         ],
       };
@@ -80,19 +80,19 @@ export function registerProductResources(
     "product-relations",
     new ResourceTemplate("pruva://products/{productId}/relations", {
       list: async () => {
-        const products = await client.call<Product[]>("list_products");
+        const env = await client.call<Product[]>("list_products");
         return {
-          resources: products.map((p) => ({
+          resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}/relations`,
             name: `${p.name} — Feature Relations`,
-            mimeType: "application/json" as const,
+            mimeType: "text/markdown" as const,
           })),
         };
       },
     }),
-    { mimeType: "application/json" },
+    { mimeType: "text/markdown" },
     async (uri, { productId }) => {
-      const data = await client.call<FeatureRelation[]>(
+      const env = await client.call<FeatureRelation[]>(
         "list_feature_relations",
         { productId: productId as string },
       );
@@ -100,8 +100,8 @@ export function registerProductResources(
         contents: [
           {
             uri: uri.href,
-            mimeType: "application/json" as const,
-            text: JSON.stringify(data, null, 2),
+            mimeType: "text/markdown" as const,
+            text: env.markdown,
           },
         ],
       };
