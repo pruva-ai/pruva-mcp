@@ -19,7 +19,7 @@ npx vitest run src/__tests__/client.test.ts
 
 ## Architecture
 
-This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 13 tools and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
+This is an MCP (Model Context Protocol) server that wraps the Pruva product development API. It exposes 14 tools (including `pruva_login`) and 5 resource templates over stdio (default) or HTTP (`--http` flag) transport.
 
 ### Core flow
 
@@ -38,6 +38,7 @@ Each module exports a `register*Tools(server, client)` function. All tool handle
 - `documents.ts` — 5 tools (list, get, create, update, search)
 - `relations.ts` — 1 tool (list_feature_relations)
 - `chat.ts` — 1 tool (ask)
+- `auth.ts` — 1 tool (`pruva_login`) — OAuth device-code flow; writes token to `~/.pruva/config.json`
 
 ### Resources (`src/resources/`)
 
@@ -56,6 +57,6 @@ Test files live in `src/__tests__/` mirroring the source structure. The vitest c
 
 ## Environment
 
-Resolves `apiKey` and `baseUrl` from (in order): `PRUVA_API_KEY` / `PRUVA_BASE_URL` env vars, then `~/.pruva/config.json` (shared with `pruva-cli`), then default `baseUrl` `https://app.pruva.io`. Users typically run `pruva config set-key <key>` once; no env var needed in the MCP server config. Optional: `PORT` (default: 3100, HTTP mode only).
+No API key env vars. The server reads `apiUrl` and `accessToken` from `~/.pruva/config.json` (shared with `pruva-cli`). `PRUVA_API_URL` overrides the `apiUrl` field only — the token always comes from the file, to keep it out of process listings. The server boots even without a token; users authenticate by calling the `pruva_login` tool, which runs the device-code flow against `/api/oauth/device/code` and `/api/oauth/device/token` and persists the result. Optional: `PORT` (default: 3100, HTTP mode only).
 
 See `src/config.ts` for the resolver.
