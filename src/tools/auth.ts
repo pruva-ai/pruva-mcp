@@ -118,6 +118,7 @@ export interface DeviceLoginDeps {
   sleep?: (ms: number) => Promise<void>;
   maxWaitMs?: number;
   notify?: (message: string) => Promise<void> | void;
+  openUrl?: (url: string) => void;
 }
 
 /**
@@ -133,6 +134,7 @@ export async function runDeviceLogin(
   const sleep = deps.sleep ?? defaultSleep;
   const maxWaitMs = deps.maxWaitMs ?? MAX_WAIT_MS;
   const notify = deps.notify;
+  const openUrl = deps.openUrl ?? openBrowser;
 
   const device = await requestDeviceCode(apiUrl);
   const intro = [
@@ -152,7 +154,7 @@ export async function runDeviceLogin(
     }
   }
 
-  openBrowser(device.verification_uri_complete);
+  openUrl(device.verification_uri_complete);
 
   const start = now();
   const expiresAt = start + device.expires_in * 1000;

@@ -50,6 +50,7 @@ function fakeClock() {
     sleep: async (ms: number) => {
       t += ms;
     },
+    openUrl: () => {},
   };
 }
 
@@ -124,6 +125,7 @@ describe("runDeviceLogin", () => {
         sleepCalls.push(ms);
         t += ms;
       },
+      openUrl: () => {},
     };
 
     mockFetch
