@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PruvaClient } from "./client.js";
 import { registerAuthTools } from "./tools/auth.js";
@@ -9,10 +12,17 @@ import { registerRelationTools } from "./tools/relations.js";
 import { registerProductResources } from "./resources/products.js";
 import { registerDocumentResources } from "./resources/documents.js";
 
+const pkg = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"),
+    "utf8",
+  ),
+) as { version: string };
+
 export function createPruvaServer(client: PruvaClient): McpServer {
   const server = new McpServer({
     name: "pruva",
-    version: "0.3.0",
+    version: pkg.version,
   });
 
   // Auth tool — always available so users can log in from inside the MCP client
