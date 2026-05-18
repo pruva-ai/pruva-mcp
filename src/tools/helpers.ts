@@ -1,15 +1,20 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
+type ToolHandler<Extra> = (
+  params: Record<string, unknown>,
+  extra?: Extra,
+) => Promise<CallToolResult>;
+
 /**
  * Wraps a tool handler so that any thrown error is returned as
  * `{ isError: true, content: [...] }` instead of crashing the server.
  */
-export function wrapToolHandler(
-  fn: (params: Record<string, unknown>) => Promise<CallToolResult>,
-): (params: Record<string, unknown>) => Promise<CallToolResult> {
-  return async (params) => {
+export function wrapToolHandler<Extra = unknown>(
+  fn: ToolHandler<Extra>,
+): ToolHandler<Extra> {
+  return async (params, extra) => {
     try {
-      return await fn(params);
+      return await fn(params, extra);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       return {

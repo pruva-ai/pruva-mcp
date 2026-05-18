@@ -1,3 +1,5 @@
+import { spawn } from "node:child_process";
+import { platform } from "node:os";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -94,10 +96,28 @@ function defaultSleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function openBrowser(url: string): void {
+  const cmd =
+    platform() === "darwin"
+      ? "open"
+      : platform() === "win32"
+        ? "cmd"
+        : "xdg-open";
+  const args = platform() === "win32" ? ["/c", "start", "", url] : [url];
+  try {
+    const child = spawn(cmd, args, { stdio: "ignore", detached: true });
+    child.on("error", () => {});
+    child.unref();
+  } catch {
+    // ignore — caller still shows the URL
+  }
+}
+
 export interface DeviceLoginDeps {
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
   maxWaitMs?: number;
+  notify?: (message: string) => Promise<void> | void;
 }
 
 /**
@@ -112,6 +132,7 @@ export async function runDeviceLogin(
   const now = deps.now ?? Date.now;
   const sleep = deps.sleep ?? defaultSleep;
   const maxWaitMs = deps.maxWaitMs ?? MAX_WAIT_MS;
+  const notify = deps.notify;
 
   const device = await requestDeviceCode(apiUrl);
   const intro = [
@@ -122,6 +143,16 @@ export async function runDeviceLogin(
     "",
     `Waiting for approval... (expires in ${device.expires_in}s)`,
   ].join("\n");
+
+  if (notify) {
+    try {
+      await notify(intro);
+    } catch {
+      // notification failures must not block the login flow
+    }
+  }
+
+  openBrowser(device.verification_uri_complete);
 
   const start = now();
   const expiresAt = start + device.expires_in * 1000;
@@ -186,10 +217,28 @@ export function registerAuthTools(server: McpServer) {
           "Optional API URL override (e.g. for staging). Defaults to the configured or built-in URL.",
         ),
     },
-    wrapToolHandler(async (params) => {
+    wrapToolHandler(async (params, extra) => {
       const url = typeof params.url === "string" ? params.url : undefined;
       const apiUrl = resolveApiUrl(url);
-      return runDeviceLogin(apiUrl);
+      const sendNotification = (
+        extra as
+          | {
+              sendNotification?: (n: {
+                method: string;
+                params: Record<string, unknown>;
+              }) => Promise<void>;
+            }
+          | undefined
+      )?.sendNotification;
+      const notify = sendNotification
+        ? async (message: string) => {
+            await sendNotification({
+              method: "notifications/message",
+              params: { level: "info", logger: "pruva_login", data: message },
+            });
+          }
+        : undefined;
+      return runDeviceLogin(apiUrl, { notify });
     }),
   );
 }

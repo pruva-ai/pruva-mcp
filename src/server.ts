@@ -20,10 +20,15 @@ const pkg = JSON.parse(
 ) as { version: string };
 
 export function createPruvaServer(client: PruvaClient): McpServer {
-  const server = new McpServer({
-    name: "pruva",
-    version: pkg.version,
-  });
+  const server = new McpServer(
+    {
+      name: "pruva",
+      version: pkg.version,
+    },
+    {
+      capabilities: { logging: {} },
+    },
+  );
 
   // Auth tool — always available so users can log in from inside the MCP client
   registerAuthTools(server);

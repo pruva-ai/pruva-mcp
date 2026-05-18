@@ -45,7 +45,7 @@ describe("wrapToolHandler", () => {
 
     const result = await wrapped({ foo: "bar" });
 
-    expect(fn).toHaveBeenCalledWith({ foo: "bar" });
+    expect(fn).toHaveBeenCalledWith({ foo: "bar" }, undefined);
     expect(result).toBe(expected);
   });
 
