@@ -1,6 +1,6 @@
 # pruva-mcp
 
-MCP server for [Pruva](https://app.pruva.io) – AI-powered product development platform.
+MCP server for [Pruva](https://www.pruva.ai) – AI-powered product development platform.
 
 ## Installation
 
@@ -16,19 +16,16 @@ Or install globally:
 npm install -g pruva-mcp
 ```
 
+## Authentication
+
+The server uses an interactive OAuth flow — no API keys to manage. After adding the server to your MCP client, call the `pruva_login` tool once. It returns a URL you open in your browser to approve access, then writes the resulting token to `~/.pruva/config.json` (shared with the `pruva-cli`).
+
 ## Configuration
-
-Set your API key as an environment variable:
-
-```bash
-export PRUVA_API_KEY="your-api-key"
-```
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `PRUVA_API_KEY` | Yes | — | Your Pruva API key |
-| `PRUVA_BASE_URL` | No | `https://app.pruva.io` | Pruva API base URL |
-| `PORT` | No | `3100` | Port for HTTP mode |
+| `PRUVA_API_URL` | No | `https://www.pruva.ai` | API URL override (e.g. for staging). |
+| `PORT` | No | `3100` | Port for HTTP mode. |
 
 ## Usage with Claude Desktop
 
@@ -39,14 +36,13 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "pruva": {
       "command": "npx",
-      "args": ["-y", "pruva-mcp"],
-      "env": {
-        "PRUVA_API_KEY": "your-api-key"
-      }
+      "args": ["-y", "pruva-mcp"]
     }
   }
 }
 ```
+
+Then ask Claude to call the `pruva_login` tool to authenticate.
 
 ## Usage with Claude Code
 
@@ -54,7 +50,7 @@ Add to your `claude_desktop_config.json`:
 claude mcp add pruva -- npx -y pruva-mcp
 ```
 
-Then set `PRUVA_API_KEY` in your environment.
+Then call the `pruva_login` tool from within Claude Code to authenticate.
 
 ## HTTP Mode
 
@@ -70,6 +66,7 @@ This exposes an `/mcp` endpoint on port 3100 (configurable via `PORT`) and a `/h
 
 | Tool | Description |
 |---|---|
+| `pruva_login` | Authenticate via OAuth device code flow. Call once before using other tools. |
 | `pruva_list_products` | List all active products in your Pruva workspace |
 | `pruva_get_product` | Get details of a specific product |
 | `pruva_list_features` | List all features for a product |
