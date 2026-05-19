@@ -6,7 +6,7 @@
   "description": "Vercel-hostable Next.js wrapper that exposes pruva-mcp tools as a remote MCP server over HTTP.",
   "scripts": {
     "dev": "next dev --port 3100",
-    "prebuild": "cd .. && npm install && npm run build",
+    "prebuild": "cd .. && npm install --include=dev && npm run build",
     "build": "next build",
     "start": "next start --port 3100"
   },
