@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PruvaClient } from "./client.js";
+import { type ClientProvider, staticClient } from "./client-provider.js";
 import { registerAuthTools } from "./tools/auth.js";
 import { registerChatTools } from "./tools/chat.js";
 import { registerDocumentTools } from "./tools/documents.js";
@@ -19,6 +20,10 @@ const pkg = JSON.parse(
   ),
 ) as { version: string };
 
+export type CreateServerOptions = {
+  mode?: "stdio" | "http";
+};
+
 /**
  * Builds the MCP server with all tools registered.
  *
@@ -31,7 +36,21 @@ const pkg = JSON.parse(
  */
 export function createPruvaServer(
   client: PruvaClient,
-  options: { mode?: "stdio" | "http" } = {},
+  options: CreateServerOptions = {},
+): McpServer {
+  return createPruvaServerWithProvider(staticClient(client), options);
+}
+
+/**
+ * Like `createPruvaServer`, but takes a per-request `ClientProvider`.
+ *
+ * Used by the Vercel deploy wrapper, which builds a fresh `PruvaClient` for
+ * each MCP request from the Bearer token surfaced via `extra.authInfo.token`.
+ * Always runs in `"http"` mode (no `pruva_login`).
+ */
+export function createPruvaServerWithProvider(
+  getClient: ClientProvider,
+  options: CreateServerOptions = {},
 ): McpServer {
   const mode = options.mode ?? "stdio";
   const server = new McpServer(
@@ -50,15 +69,15 @@ export function createPruvaServer(
   }
 
   // Data tools — require an access token in the config
-  registerProductTools(server, client);
-  registerFeatureTools(server, client);
-  registerDocumentTools(server, client);
-  registerRelationTools(server, client);
-  registerChatTools(server, client);
+  registerProductTools(server, getClient);
+  registerFeatureTools(server, getClient);
+  registerDocumentTools(server, getClient);
+  registerRelationTools(server, getClient);
+  registerChatTools(server, getClient);
 
   // Resources
-  registerProductResources(server, client);
-  registerDocumentResources(server, client);
+  registerProductResources(server, getClient);
+  registerDocumentResources(server, getClient);
 
   return server;
 }

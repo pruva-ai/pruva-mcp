@@ -1,18 +1,22 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { PruvaClient } from "../client.js";
+import type { ClientProvider } from "../client-provider.js";
 import type { FeatureDetail, FeatureSummary } from "../types.js";
 import { markdownResult, wrapToolHandler } from "./helpers.js";
 
-export function registerFeatureTools(server: McpServer, client: PruvaClient) {
+export function registerFeatureTools(
+  server: McpServer,
+  getClient: ClientProvider,
+) {
   server.tool(
     "pruva_list_features",
     "List all features for a product. Returns a markdown summary.",
     { productId: z.string().describe("The product UUID") },
-    wrapToolHandler(async ({ productId }) => {
-      const env = await client.call<FeatureSummary[]>("list_features", {
-        productId,
-      });
+    wrapToolHandler(async ({ productId }, extra) => {
+      const env = await getClient(extra).call<FeatureSummary[]>(
+        "list_features",
+        { productId },
+      );
       return markdownResult(env.markdown);
     }),
   );
@@ -24,8 +28,8 @@ export function registerFeatureTools(server: McpServer, client: PruvaClient) {
       productId: z.string().describe("The product UUID"),
       slug: z.string().describe("The feature slug"),
     },
-    wrapToolHandler(async ({ productId, slug }) => {
-      const env = await client.call<FeatureDetail>("get_feature", {
+    wrapToolHandler(async ({ productId, slug }, extra) => {
+      const env = await getClient(extra).call<FeatureDetail>("get_feature", {
         productId,
         slug,
       });
@@ -45,8 +49,8 @@ export function registerFeatureTools(server: McpServer, client: PruvaClient) {
         .optional()
         .describe("Initial feature content (YAML). Defaults to a title-only stub."),
     },
-    wrapToolHandler(async ({ productId, slug, title, content }) => {
-      const env = await client.call<FeatureDetail>("create_feature", {
+    wrapToolHandler(async ({ productId, slug, title, content }, extra) => {
+      const env = await getClient(extra).call<FeatureDetail>("create_feature", {
         productId,
         slug,
         title,
@@ -64,8 +68,8 @@ export function registerFeatureTools(server: McpServer, client: PruvaClient) {
       slug: z.string().describe("The feature slug"),
       content: z.string().describe("New feature content (YAML)"),
     },
-    wrapToolHandler(async ({ productId, slug, content }) => {
-      const env = await client.call<FeatureSummary>("update_feature", {
+    wrapToolHandler(async ({ productId, slug, content }, extra) => {
+      const env = await getClient(extra).call<FeatureSummary>("update_feature", {
         productId,
         slug,
         content,

@@ -1,0 +1,26 @@
+{
+  "name": "pruva-mcp-deploy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vercel-hostable Next.js wrapper that exposes pruva-mcp tools as a remote MCP server over HTTP.",
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.26.0",
+    "mcp-handler": "^1.1.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.3"
+  }
+}

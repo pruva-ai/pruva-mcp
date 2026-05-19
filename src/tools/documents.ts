@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { PruvaClient } from "../client.js";
+import type { ClientProvider } from "../client-provider.js";
 import type {
   DocumentFull,
   DocumentSummary,
@@ -8,15 +8,19 @@ import type {
 } from "../types.js";
 import { markdownResult, wrapToolHandler } from "./helpers.js";
 
-export function registerDocumentTools(server: McpServer, client: PruvaClient) {
+export function registerDocumentTools(
+  server: McpServer,
+  getClient: ClientProvider,
+) {
   server.tool(
     "pruva_list_documents",
     "List all context documents for a product (with content previews). Returns a markdown summary.",
     { productId: z.string().describe("The product UUID") },
-    wrapToolHandler(async ({ productId }) => {
-      const env = await client.call<DocumentSummary[]>("list_documents", {
-        productId,
-      });
+    wrapToolHandler(async ({ productId }, extra) => {
+      const env = await getClient(extra).call<DocumentSummary[]>(
+        "list_documents",
+        { productId },
+      );
       return markdownResult(env.markdown);
     }),
   );
@@ -28,8 +32,8 @@ export function registerDocumentTools(server: McpServer, client: PruvaClient) {
       productId: z.string().describe("The product UUID"),
       path: z.string().describe("The document path (e.g. overview.md)"),
     },
-    wrapToolHandler(async ({ productId, path }) => {
-      const env = await client.call<DocumentFull>("get_document", {
+    wrapToolHandler(async ({ productId, path }, extra) => {
+      const env = await getClient(extra).call<DocumentFull>("get_document", {
         productId,
         path,
       });
@@ -45,8 +49,8 @@ export function registerDocumentTools(server: McpServer, client: PruvaClient) {
       path: z.string().describe("Document path (e.g. overview.md)"),
       content: z.string().describe("Document content (Markdown)"),
     },
-    wrapToolHandler(async ({ productId, path, content }) => {
-      const env = await client.call<DocumentFull>("create_document", {
+    wrapToolHandler(async ({ productId, path, content }, extra) => {
+      const env = await getClient(extra).call<DocumentFull>("create_document", {
         productId,
         path,
         content,
@@ -63,8 +67,8 @@ export function registerDocumentTools(server: McpServer, client: PruvaClient) {
       path: z.string().describe("The document path"),
       content: z.string().describe("New document content"),
     },
-    wrapToolHandler(async ({ productId, path, content }) => {
-      const env = await client.call<DocumentFull>("update_document", {
+    wrapToolHandler(async ({ productId, path, content }, extra) => {
+      const env = await getClient(extra).call<DocumentFull>("update_document", {
         productId,
         path,
         content,
@@ -80,11 +84,11 @@ export function registerDocumentTools(server: McpServer, client: PruvaClient) {
       productId: z.string().describe("The product UUID"),
       query: z.string().describe("Search query string"),
     },
-    wrapToolHandler(async ({ productId, query }) => {
-      const env = await client.call<SearchResult[]>("search_documents", {
-        productId,
-        query,
-      });
+    wrapToolHandler(async ({ productId, query }, extra) => {
+      const env = await getClient(extra).call<SearchResult[]>(
+        "search_documents",
+        { productId, query },
+      );
       return markdownResult(env.markdown);
     }),
   );

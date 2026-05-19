@@ -1,5 +1,5 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { PruvaClient } from "../client.js";
+import type { ClientProvider } from "../client-provider.js";
 import type {
   FeatureRelation,
   FeatureSummary,
@@ -9,14 +9,14 @@ import type {
 
 export function registerProductResources(
   server: McpServer,
-  client: PruvaClient,
+  getClient: ClientProvider,
 ) {
   // ── Product details ─────────────────────────────────────────
   server.resource(
     "product",
     new ResourceTemplate("pruva://products/{productId}", {
-      list: async () => {
-        const env = await client.call<Product[]>("list_products");
+      list: async (extra) => {
+        const env = await getClient(extra).call<Product[]>("list_products");
         return {
           resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}`,
@@ -27,8 +27,8 @@ export function registerProductResources(
       },
     }),
     { mimeType: "text/markdown" },
-    async (uri, { productId }) => {
-      const env = await client.call<ProductDetail>("get_product", {
+    async (uri, { productId }, extra) => {
+      const env = await getClient(extra).call<ProductDetail>("get_product", {
         productId: productId as string,
       });
       return {
@@ -47,8 +47,8 @@ export function registerProductResources(
   server.resource(
     "product-features",
     new ResourceTemplate("pruva://products/{productId}/features", {
-      list: async () => {
-        const env = await client.call<Product[]>("list_products");
+      list: async (extra) => {
+        const env = await getClient(extra).call<Product[]>("list_products");
         return {
           resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}/features`,
@@ -59,10 +59,11 @@ export function registerProductResources(
       },
     }),
     { mimeType: "text/markdown" },
-    async (uri, { productId }) => {
-      const env = await client.call<FeatureSummary[]>("list_features", {
-        productId: productId as string,
-      });
+    async (uri, { productId }, extra) => {
+      const env = await getClient(extra).call<FeatureSummary[]>(
+        "list_features",
+        { productId: productId as string },
+      );
       return {
         contents: [
           {
@@ -79,8 +80,8 @@ export function registerProductResources(
   server.resource(
     "product-relations",
     new ResourceTemplate("pruva://products/{productId}/relations", {
-      list: async () => {
-        const env = await client.call<Product[]>("list_products");
+      list: async (extra) => {
+        const env = await getClient(extra).call<Product[]>("list_products");
         return {
           resources: env.data.map((p) => ({
             uri: `pruva://products/${p.id}/relations`,
@@ -91,8 +92,8 @@ export function registerProductResources(
       },
     }),
     { mimeType: "text/markdown" },
-    async (uri, { productId }) => {
-      const env = await client.call<FeatureRelation[]>(
+    async (uri, { productId }, extra) => {
+      const env = await getClient(extra).call<FeatureRelation[]>(
         "list_feature_relations",
         { productId: productId as string },
       );
