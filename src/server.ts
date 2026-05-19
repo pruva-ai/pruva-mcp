@@ -19,7 +19,21 @@ const pkg = JSON.parse(
   ),
 ) as { version: string };
 
-export function createPruvaServer(client: PruvaClient): McpServer {
+/**
+ * Builds the MCP server with all tools registered.
+ *
+ * `options.mode` controls which tools are exposed:
+ *   - `"stdio"` (default) — includes `pruva_login`, which runs the device-code
+ *     flow and writes a token to disk. Safe for local single-user processes.
+ *   - `"http"` — omits `pruva_login`. Browser-spawning + 5min poll + disk
+ *     writes are incompatible with serverless / multi-tenant deploys; the
+ *     wrapping host is expected to inject a token per request instead.
+ */
+export function createPruvaServer(
+  client: PruvaClient,
+  options: { mode?: "stdio" | "http" } = {},
+): McpServer {
+  const mode = options.mode ?? "stdio";
   const server = new McpServer(
     {
       name: "pruva",
@@ -30,8 +44,10 @@ export function createPruvaServer(client: PruvaClient): McpServer {
     },
   );
 
-  // Auth tool — always available so users can log in from inside the MCP client
-  registerAuthTools(server);
+  // Auth tool — stdio only. In HTTP mode the host supplies the token directly.
+  if (mode === "stdio") {
+    registerAuthTools(server);
+  }
 
   // Data tools — require an access token in the config
   registerProductTools(server, client);

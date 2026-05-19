@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
 import { PruvaClient } from "./client.js";
+import { resolveConfig } from "./config.js";
 import { createPruvaServer } from "./server.js";
 
 // ── Configuration ─────────────────────────────────────────────
@@ -12,16 +13,14 @@ const port = parseInt(process.env.PORT || "3100", 10);
 const useHttp = process.argv.includes("--http");
 
 // ── Bootstrap ─────────────────────────────────────────────────
-//
-// The client reads the latest config on every API call, so the server
-// can boot before the user has authenticated. The first thing an
-// unauthenticated user should do is call the `pruva_login` tool.
-
-const client = new PruvaClient();
-const server = createPruvaServer(client);
 
 if (useHttp) {
-  // HTTP transport — for remote use
+  // Multi-tenant per-request auth is handled by the Vercel deploy wrapper (pruva-mcp-server). This standalone HTTP mode is single-tenant via env vars.
+  const apiUrl = process.env.PRUVA_API_URL ?? "https://www.pruva.ai";
+  const accessToken = process.env.PRUVA_ACCESS_TOKEN ?? "";
+  const client = new PruvaClient(apiUrl, accessToken);
+  const server = createPruvaServer(client, { mode: "http" });
+
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
 
   const httpServer = createServer(async (req, res) => {
@@ -42,7 +41,12 @@ if (useHttp) {
     console.error(`Pruva MCP server (HTTP) listening on http://localhost:${port}/mcp`);
   });
 } else {
-  // stdio transport — for Claude Code / local IDE use (default)
+  // stdio transport — for Claude Code / local IDE use (default).
+  // Boot even without a token; the user can run `pruva_login` to populate it.
+  const resolved = resolveConfig();
+  const client = new PruvaClient(resolved.apiUrl, resolved.accessToken ?? "");
+  const server = createPruvaServer(client, { mode: "stdio" });
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("Pruva MCP server running on stdio");
