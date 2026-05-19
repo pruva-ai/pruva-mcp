@@ -82,7 +82,12 @@ const mcpHandler = createMcpHandler(
   (server) => {
     registerAll(server, getClient);
   },
-  {},
+  {
+    serverInfo: {
+      name: "pruva",
+      version: "0.4.1",
+    },
+  },
   { basePath: "/api" },
 );
 
