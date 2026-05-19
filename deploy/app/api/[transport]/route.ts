@@ -107,8 +107,14 @@ async function verifyToken(
   };
 }
 
+// When clients hit this endpoint without a Bearer, `withMcpAuth` returns 401
+// with a `WWW-Authenticate: Bearer resource_metadata="..."` header pointing at
+// the protected-resource metadata endpoint defined under
+// `app/.well-known/oauth-protected-resource/route.ts`. That metadata in turn
+// tells the client which authorization server to use to obtain a token.
 const authHandler = withMcpAuth(mcpHandler, verifyToken, {
   required: true,
+  resourceMetadataPath: "/.well-known/oauth-protected-resource",
 });
 
 export { authHandler as GET, authHandler as POST, authHandler as DELETE };
