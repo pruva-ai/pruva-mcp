@@ -4,8 +4,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
 import { PruvaClient } from "./client.js";
+import type { ClientProvider } from "./client-provider.js";
 import { resolveConfig } from "./config.js";
-import { createPruvaServer } from "./server.js";
+import { createPruvaServer, createPruvaServerWithProvider } from "./server.js";
 
 // ── Configuration ─────────────────────────────────────────────
 
@@ -43,9 +44,13 @@ if (useHttp) {
 } else {
   // stdio transport — for Claude Code / local IDE use (default).
   // Boot even without a token; the user can run `pruva_login` to populate it.
-  const resolved = resolveConfig();
-  const client = new PruvaClient(resolved.apiUrl, resolved.accessToken ?? "");
-  const server = createPruvaServer(client, { mode: "stdio" });
+  // Provider re-reads config on each call so a fresh token from `pruva_login`
+  // takes effect immediately without restarting the server.
+  const provider: ClientProvider = () => {
+    const resolved = resolveConfig();
+    return new PruvaClient(resolved.apiUrl, resolved.accessToken ?? "");
+  };
+  const server = createPruvaServerWithProvider(provider, { mode: "stdio" });
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
