@@ -7,11 +7,10 @@
  *
  * Auth model
  * ----------
- * The Pruva backend (`/api/mcp/data`) already validates the Bearer token on
- * every call by sha256-hashing it and looking it up in `personal_access_tokens`.
- * That means this wrapper does NOT need its own Supabase connection, and does
- * NOT need to re-verify token validity locally — it just needs to surface the
- * caller's token to the per-call `PruvaClient`.
+ * The Pruva backend validates the token on every call. This wrapper does not
+ * need its own database connection, and does NOT need to re-verify token
+ * validity locally — it just needs to surface the caller's token to the
+ * per-call `PruvaClient`.
  *
  * Why `withMcpAuth` + a permissive `verifyToken`
  * ----------------------------------------------
@@ -92,9 +91,8 @@ const mcpHandler = createMcpHandler(
 );
 
 // `verifyToken` only checks the Bearer is present and non-empty. The Pruva
-// backend re-validates on every API call (hash lookup, revocation check,
-// expiry check), so duplicating that here would add latency without adding
-// security.
+// backend re-validates on every API call (revocation check, expiry check),
+// so duplicating that here would add latency without adding security.
 async function verifyToken(
   _req: Request,
   bearerToken?: string,

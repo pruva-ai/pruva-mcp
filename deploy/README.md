@@ -10,7 +10,7 @@ as a remote MCP server over HTTPS.
 - Per request: extracts `Authorization: Bearer <token>` → builds a fresh
   `PruvaClient(token)` → tool calls forward to the Pruva backend's
   `/api/mcp/data` endpoint, which re-validates the token.
-- No Supabase or other infra is wired here. Token validation lives entirely on
+- No database or other infra is wired here. Token validation lives entirely on
   the Pruva backend.
 
 ## Local dev
