@@ -90,6 +90,14 @@ describe("PruvaClient", () => {
     );
   });
 
+  it("throws generic message when error body parses but has no error field", async () => {
+    mockFetch.mockResolvedValue(jsonResponse({ other: "field" }, 500));
+    const client = new PruvaClient("https://example.com", "my-secret-key");
+    await expect(client.call("list_products")).rejects.toThrow(
+      "Pruva API error (500)",
+    );
+  });
+
   it("throws generic message when error body is unparseable", async () => {
     mockFetch.mockResolvedValue(
       new Response("<html>Server Error</html>", {
@@ -146,5 +154,15 @@ describe("PruvaClient.chat", () => {
     await expect(
       client.chat({ productId: "p1", message: "hi" }),
     ).rejects.toBeInstanceOf(NotAuthenticatedError);
+  });
+
+  it("throws with API error message on non-401 non-OK", async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({ error: "Chat blew up" }, 500),
+    );
+    const client = new PruvaClient("https://example.com", "my-secret-key");
+    await expect(
+      client.chat({ productId: "p1", message: "hi" }),
+    ).rejects.toThrow("Chat blew up");
   });
 });

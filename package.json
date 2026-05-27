@@ -1,12 +1,10 @@
 {
   "name": "pruva-mcp",
-  "version": "0.4.2",
-  "description": "MCP server for Pruva – AI-powered product development platform",
+  "version": "1.0.0",
+  "description": "MCP server library for Pruva – exposes Pruva tools and resources over MCP. Used by the Pruva remote MCP deployment.",
   "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "pruva-mcp": "dist/index.js"
-  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
   "license": "MIT",
   "keywords": [
     "mcp",
@@ -31,10 +29,10 @@
   ],
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
@@ -43,6 +41,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "@vitest/coverage-v8": "^4.0.18",
     "typescript": "^5.8.3",
     "vitest": "^4.0.18"
   },

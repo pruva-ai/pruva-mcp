@@ -16,7 +16,7 @@ beforeAll(async () => {
     call: mockCall,
     chat: mockChat,
   } as unknown as PruvaClient;
-  const server = createPruvaServer(mockPruvaClient);
+  const server = createPruvaServer(() => mockPruvaClient);
 
   const [clientTransport, serverTransport] =
     InMemoryTransport.createLinkedPair();

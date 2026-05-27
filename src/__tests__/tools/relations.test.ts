@@ -9,7 +9,7 @@ let client: Client;
 beforeAll(async () => {
   mockCall = vi.fn();
   const mockPruvaClient = { call: mockCall } as unknown as PruvaClient;
-  const server = createPruvaServer(mockPruvaClient);
+  const server = createPruvaServer(() => mockPruvaClient);
 
   const [clientTransport, serverTransport] =
     InMemoryTransport.createLinkedPair();
