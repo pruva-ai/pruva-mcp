@@ -7,9 +7,7 @@ import type {
 } from "./types.js";
 
 export class NotAuthenticatedError extends Error {
-  constructor(
-    message = "Not authenticated. Call the `pruva_login` tool first to authenticate.",
-  ) {
+  constructor(message = "Not authenticated. Missing or invalid Bearer token.") {
     super(message);
     this.name = "NotAuthenticatedError";
   }
@@ -18,14 +16,9 @@ export class NotAuthenticatedError extends Error {
 /**
  * HTTP client for the Pruva data API.
  *
- * Both `apiUrl` and `accessToken` are injected at construction time so the
- * same class can serve two transports:
- *   - stdio (local npm) — token comes from `~/.pruva/config.json` once at boot
- *   - HTTP (remote deploy) — token comes from a per-request Bearer header,
- *     so the wrapper constructs a fresh client per call
- *
- * An empty `accessToken` is allowed (so stdio can boot before login). Calls
- * will throw `NotAuthenticatedError` until a real token is supplied.
+ * `accessToken` comes from the per-request Bearer header; the deploy wrapper
+ * constructs a fresh client per call. An empty `accessToken` is rejected with
+ * `NotAuthenticatedError` before any network call.
  */
 export class PruvaClient {
   private readonly apiUrl: string;

@@ -1,26 +1,28 @@
 # pruva-mcp
 
-[![npm version](https://img.shields.io/npm/v/pruva-mcp.svg)](https://www.npmjs.com/package/pruva-mcp)
-[![npm downloads](https://img.shields.io/npm/dm/pruva-mcp.svg)](https://www.npmjs.com/package/pruva-mcp)
 [![license](https://img.shields.io/npm/l/pruva-mcp.svg)](./LICENSE)
 
-[Pruva](https://www.pruva.ai) is an AI-powered product development platform that helps teams define products, craft features, and generate specs with AI agents. The [Model Context Protocol](https://modelcontextprotocol.io) is an open standard that lets LLM clients connect to external tools and data sources. This MCP server gives Claude, Cursor, and other MCP-compatible clients direct access to your Pruva products, features, and documents — so you can read, search, and edit your product knowledge base right from your chat or editor.
+[Pruva](https://www.pruva.ai) is an AI-powered product development platform that helps teams define products, craft features, and generate specs with AI agents. The [Model Context Protocol](https://modelcontextprotocol.io) is an open standard that lets LLM clients connect to external tools and data sources.
 
-## Quick Start
+This repo hosts Pruva's **remote MCP server**. Clients connect over HTTPS — no local install, no API keys to copy around. Authentication is handled by your MCP client via OAuth against the Pruva backend.
 
-1. Add the server to your MCP client (see snippets below).
-2. Ask your assistant to call the `pruva_login` tool — it opens a browser for one-time approval and stores the token in `~/.pruva/config.json` (shared with [`pruva-cli`](https://github.com/pruva-ai/pruva-cli)).
-3. Start asking questions like *"list my Pruva products"* or *"summarize the latest spec for product X"*.
+> Looking for a local CLI? See [`pruva-cli`](https://github.com/pruva-ai/pruva-cli).
 
-```bash
-npx pruva-mcp
+## Endpoint
+
+```
+https://mcp.pruva.ai/api/mcp
 ```
 
-Or install globally:
+Streamable HTTP transport. Legacy SSE clients can use `https://mcp.pruva.ai/api/sse`.
+
+## Usage with Claude Code
 
 ```bash
-npm install -g pruva-mcp
+claude mcp add --transport http pruva https://mcp.pruva.ai/api/mcp
 ```
+
+The first tool call triggers OAuth in your browser. Subsequent calls reuse the stored token.
 
 ## Usage with Claude Desktop
 
@@ -30,22 +32,12 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "pruva": {
-      "command": "npx",
-      "args": ["-y", "pruva-mcp"]
+      "type": "http",
+      "url": "https://mcp.pruva.ai/api/mcp"
     }
   }
 }
 ```
-
-Then ask Claude to call the `pruva_login` tool to authenticate.
-
-## Usage with Claude Code
-
-```bash
-claude mcp add pruva -- npx -y pruva-mcp
-```
-
-Then call the `pruva_login` tool from within Claude Code to authenticate.
 
 ## Usage with Cursor
 
@@ -55,45 +47,20 @@ Add to your `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):
 {
   "mcpServers": {
     "pruva": {
-      "command": "npx",
-      "args": ["-y", "pruva-mcp"]
+      "url": "https://mcp.pruva.ai/api/mcp"
     }
   }
 }
 ```
 
-Restart Cursor and call `pruva_login` from the chat to authenticate.
-
 ## Usage with other MCP clients
 
-Any MCP client that supports stdio transports works — point it at the `npx -y pruva-mcp` command (or the globally installed `pruva-mcp` binary). The server speaks plain MCP over stdio with no extra setup.
-
-## Authentication
-
-The server uses an interactive OAuth flow — no API keys to manage. After adding the server to your MCP client, call the `pruva_login` tool once. It returns a URL you open in your browser to approve access, then writes the resulting token to `~/.pruva/config.json` (shared with `pruva-cli`).
-
-## Configuration
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `PRUVA_API_URL` | No | `https://www.pruva.ai` | API URL override (e.g. for staging). |
-| `PORT` | No | `3100` | Port for HTTP mode. |
-
-## HTTP Mode
-
-For remote use, start the server in HTTP mode:
-
-```bash
-npx pruva-mcp --http
-```
-
-This exposes an `/mcp` endpoint on port 3100 (configurable via `PORT`) and a `/health` endpoint for health checks.
+Any MCP client that supports the Streamable HTTP transport with OAuth 2.1 / Bearer auth works. Point it at `https://mcp.pruva.ai/api/mcp` — the protected-resource metadata at `/.well-known/oauth-protected-resource` advertises the authorization server.
 
 ## Available Tools
 
 | Tool | Description |
 |---|---|
-| `pruva_login` | Authenticate via OAuth device code flow. Call once before using other tools. |
 | `pruva_list_products` | List all active products in your Pruva workspace |
 | `pruva_get_product` | Get details of a specific product |
 | `pruva_list_features` | List all features for a product |
@@ -121,7 +88,7 @@ This exposes an `/mcp` endpoint on port 3100 (configurable via `PORT`) and a `/h
 ## Links
 
 - [Pruva](https://www.pruva.ai) — the product development platform
-- [pruva-cli](https://github.com/pruva-ai/pruva-cli) — companion command-line tool (shares the same auth token)
+- [pruva-cli](https://github.com/pruva-ai/pruva-cli) — companion command-line tool
 - [Model Context Protocol](https://modelcontextprotocol.io) — the open standard this server implements
 
 ## Contributing & Issues

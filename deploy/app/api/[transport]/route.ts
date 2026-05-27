@@ -64,8 +64,7 @@ const getClient: ClientProvider = (extra) => {
 };
 
 function registerAll(server: McpServer, provider: ClientProvider) {
-  // HTTP mode — no `pruva_login` tool. The host (this wrapper) supplies the
-  // token per request via the Bearer header.
+  // The host (this wrapper) supplies the token per request via the Bearer header.
   registerProductTools(server, provider);
   registerFeatureTools(server, provider);
   registerDocumentTools(server, provider);
@@ -84,7 +83,7 @@ const mcpHandler = createMcpHandler(
   {
     serverInfo: {
       name: "pruva",
-      version: "0.4.2",
+      version: "1.0.0",
     },
   },
   { basePath: "/api" },
