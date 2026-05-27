@@ -2,11 +2,7 @@
 
 [![license](https://img.shields.io/npm/l/pruva-mcp.svg)](./LICENSE)
 
-[Pruva](https://www.pruva.ai) is an AI-powered product development platform that helps teams define products, craft features, and generate specs with AI agents. The [Model Context Protocol](https://modelcontextprotocol.io) is an open standard that lets LLM clients connect to external tools and data sources.
-
-This repo hosts Pruva's **remote MCP server**. Clients connect over HTTPS — no local install, no API keys to copy around. Authentication is handled by your MCP client via OAuth against the Pruva backend.
-
-> Looking for a local CLI? See [`pruva-cli`](https://github.com/pruva-ai/pruva-cli).
+Remote [Model Context Protocol](https://modelcontextprotocol.io) server for [Pruva](https://www.pruva.ai). Connect your AI assistant to your Pruva products, features, and documents over HTTPS — no install, no API keys.
 
 ## Endpoint
 
@@ -14,19 +10,19 @@ This repo hosts Pruva's **remote MCP server**. Clients connect over HTTPS — no
 https://mcp.pruva.ai/api/mcp
 ```
 
-Streamable HTTP transport. Legacy SSE clients can use `https://mcp.pruva.ai/api/sse`.
+Authentication is handled by your MCP client over OAuth 2.1 against the Pruva backend. The first tool call opens a browser tab where you approve access; the token is then stored by your client and reused.
 
-## Usage with Claude Code
+## Setup
+
+### Claude Code
 
 ```bash
 claude mcp add --transport http pruva https://mcp.pruva.ai/api/mcp
 ```
 
-The first tool call triggers OAuth in your browser. Subsequent calls reuse the stored token.
+### Claude Desktop
 
-## Usage with Claude Desktop
-
-Add to your `claude_desktop_config.json`:
+In `claude_desktop_config.json`:
 
 ```json
 {
@@ -39,9 +35,9 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-## Usage with Cursor
+### Cursor
 
-Add to your `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):
+In `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
 
 ```json
 {
@@ -53,47 +49,54 @@ Add to your `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):
 }
 ```
 
-## Usage with other MCP clients
+### Other clients
 
-Any MCP client that supports the Streamable HTTP transport with OAuth 2.1 / Bearer auth works. Point it at `https://mcp.pruva.ai/api/mcp` — the protected-resource metadata at `/.well-known/oauth-protected-resource` advertises the authorization server.
+Any MCP client that speaks Streamable HTTP with OAuth 2.1 works. Point it at the endpoint — discovery happens automatically via `/.well-known/oauth-protected-resource`.
 
-## Available Tools
+## Tools
 
-| Tool | Description |
+| Tool | Purpose |
 |---|---|
-| `pruva_list_products` | List all active products in your Pruva workspace |
-| `pruva_get_product` | Get details of a specific product |
-| `pruva_list_features` | List all features for a product |
-| `pruva_get_feature` | Get details of a specific feature |
-| `pruva_create_feature` | Create a new feature within a product |
+| `pruva_list_products` | List your products |
+| `pruva_get_product` | Get a product's details |
+| `pruva_list_features` | List a product's features |
+| `pruva_get_feature` | Get a feature's details |
+| `pruva_create_feature` | Create a feature |
 | `pruva_update_feature` | Update a feature's title or status |
-| `pruva_list_documents` | List documents for a product, optionally filtered by type or feature |
-| `pruva_get_document` | Get a document's full content and metadata |
-| `pruva_create_document` | Create a new document within a product |
+| `pruva_list_documents` | List a product's documents |
+| `pruva_get_document` | Get a document's content |
+| `pruva_create_document` | Create a document |
 | `pruva_update_document` | Update a document's content or path |
-| `pruva_search_documents` | Search documents by content within a product |
-| `pruva_list_feature_relations` | List all feature relations for a product |
-| `pruva_ask` | Ask the Pruva analysis agent a read-only question about a product |
+| `pruva_search_documents` | Search documents by content |
+| `pruva_list_feature_relations` | List feature relations |
+| `pruva_ask` | Ask the Pruva analysis agent a read-only question |
 
-## Available Resources
+## Resources
 
-| URI Template | Description |
+| URI Template | Returns |
 |---|---|
 | `pruva://products/{productId}` | Product details |
-| `pruva://products/{productId}/features` | Features list for a product |
-| `pruva://products/{productId}/relations` | Feature relations for a product |
-| `pruva://products/{productId}/documents` | Documents list for a product |
-| `pruva://documents/{documentId}` | Single document content |
+| `pruva://products/{productId}/features` | Features list |
+| `pruva://products/{productId}/relations` | Feature relations |
+| `pruva://products/{productId}/documents` | Documents list |
+| `pruva://products/{productId}/documents/{path}` | Single document content |
+
+## Security
+
+- No long-lived secrets to manage — auth runs through the standard OAuth flow in your browser.
+- Tokens are stored by your MCP client, not by this server.
+- Every API call is re-validated against the Pruva backend.
+- Revoke access any time from your Pruva account settings.
 
 ## Links
 
-- [Pruva](https://www.pruva.ai) — the product development platform
-- [pruva-cli](https://github.com/pruva-ai/pruva-cli) — companion command-line tool
-- [Model Context Protocol](https://modelcontextprotocol.io) — the open standard this server implements
+- [Pruva](https://www.pruva.ai)
+- [pruva-cli](https://github.com/pruva-ai/pruva-cli) — terminal companion
+- [Model Context Protocol](https://modelcontextprotocol.io)
 
-## Contributing & Issues
+## Issues
 
-Bug reports, feature requests, and pull requests are welcome on [GitHub Issues](https://github.com/pruva-ai/pruva-mcp/issues).
+[GitHub Issues](https://github.com/pruva-ai/pruva-mcp/issues)
 
 ## License
 
